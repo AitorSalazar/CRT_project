@@ -12,18 +12,7 @@ SAMPLE = 0
 T_TO_SEND, X_TO_SEND = 0, 0
 
 DATA = np.vstack((T_ARRAY, X_ARRAY)).T
-
-
-def init():
-    # Iniciar app (necesario?)
-    qapp = QtWidgets.QApplication(sys.argv)
-    # Inicializar timer
-    qtimer = QtCore.QTimer()
-    interval_ms = 50
-    qtimer.setInterval(interval_ms)
-    # Conectar timeout a la funcion update
-    qtimer.timeout.connect(update)
-    return qtimer, qapp
+t_arr, x_arr = np.zeros(1000), np.zeros(1000)
 
 
 def update():
@@ -31,16 +20,15 @@ def update():
     T_TO_SEND = T_ARRAY[SAMPLE]
     X_TO_SEND = X_ARRAY[SAMPLE]
     curva.setData(DATA[:SAMPLE + 1])
+    t_arr[SAMPLE] = T_TO_SEND
+    x_arr[SAMPLE] = X_TO_SEND
     SAMPLE += 1
     #UPDATE_FLAG = True
 
 
 def main():
     global SAMPLE, T_TO_SEND, X_TO_SEND, UPDATE_FLAG, curva
-    t_arr, x_arr = np.zeros(1000), np.zeros(1000)
 
-    # Iniciar app
-    qapp = QtWidgets.QApplication(sys.argv)
     plot_window = pg.GraphicsLayoutWidget(show=True)
     plot1 = plot_window.addPlot(title="Señal captada")
     # plot1.plot(x=T_ARRAY, y=X_ARRAY) esto funciona
@@ -48,27 +36,12 @@ def main():
 
     # Inicializar timer
     qtimer = QtCore.QTimer()
-    #interval_ms = 50
-    #qtimer.setInterval(interval_ms)
     # Conectar timeout a la funcion update
     qtimer.timeout.connect(update)
+    # Iniciar timer con intervalo de 50ms
     qtimer.start(50)
     pg.exec()
-
-    """while not UPDATE_FLAG:  # Wait for the first update
-        QtCore.QCoreApplication.processEvents()
-
-    try:
-        while True:
-            if UPDATE_FLAG:
-                # Graficar arrays x, y
-                UPDATE_FLAG = False
-                t_arr[SAMPLE] = T_TO_SEND
-                x_arr[SAMPLE] = X_TO_SEND
-                plot1.plot(t_arr[:SAMPLE + 1], x_arr[SAMPLE + 1])
-                qapp.processEvents()
-    except KeyboardInterrupt:
-        sys.exit("Programa finalizado")"""
+    print(t_arr, "\n", x_arr)
 
 
 if __name__ == '__main__':

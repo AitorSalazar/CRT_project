@@ -1,4 +1,5 @@
 import numpy as np
+import struct
 import pyqtgraph as pg
 from pyqtgraph.Qt import QtCore, QtGui
 
@@ -17,7 +18,7 @@ for i in range(cycles):
     test_f_3[i_scaled: i_scaled + low - 1] = 0
     test_f_3[i_scaled + low: i_scaled + low + high] = 1
 
-x = np.linspace(0, 10, 100)
+"""x = np.linspace(0, 10, 100)
 y = test_f_3
 # Crear ventana de ploteo
 MyPlot = pg.plot()
@@ -27,4 +28,14 @@ MyPlot.plot(x, y)
 if __name__ == '__main__':
     import sys
     if (sys.flags.interactive != 1) or not hasattr(QtCore, 'PYQT_VERSION'):
-        QtGui.QGuiApplication.instance().exec_()
+        QtGui.QGuiApplication.instance().exec_()"""
+
+
+def float_to_hex(f):
+    return hex(struct.unpack('<I', struct.pack('<f', f))[0])
+
+
+print(float_to_hex(1.25))
+
+
+
