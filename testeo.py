@@ -35,7 +35,24 @@ def float_to_hex(f):
     return hex(struct.unpack('<I', struct.pack('<f', f))[0])
 
 
-print(float_to_hex(1.25))
+def list_of_bytes(v_hex):
+    v_bytearray = bytes.fromhex(v_hex[2:])
+    byte_list = []
+    for i in range(len(v_bytearray)):
+        byte_list.append("0x" + "{:02x}".format(v_bytearray[i]))
+    return byte_list
 
 
-
+val = 1.25
+val_hex = float_to_hex(val)
+print(type(val_hex))
+print(val_hex)
+val_bytes = bytes.fromhex(val_hex[2:])
+print(type(val_bytes))
+print(val_bytes)
+val_bytearray = bytearray.fromhex(val_hex[2:])
+print(type(val_bytearray))
+print(val_bytearray)
+print("{:02x}".format(val_bytearray[0]))
+b_list = list_of_bytes(val_hex)
+b_list.extend(['1', 2])
