@@ -17,12 +17,13 @@ t_arr, x_arr = np.zeros(1000), np.zeros(1000)
 
 def update():
     global SAMPLE, T_TO_SEND, X_TO_SEND, curva, DATA #UPDATE_FLAG
-    T_TO_SEND = T_ARRAY[SAMPLE]
-    X_TO_SEND = X_ARRAY[SAMPLE]
+    T_TO_SEND = T_ARRAY[SAMPLE%len(T_ARRAY)]
+    X_TO_SEND = X_ARRAY[SAMPLE%len(T_ARRAY)]
     curva.setData(DATA[:SAMPLE + 1])
     t_arr[SAMPLE] = T_TO_SEND
     x_arr[SAMPLE] = X_TO_SEND
     SAMPLE += 1
+
     #UPDATE_FLAG = True
 
 

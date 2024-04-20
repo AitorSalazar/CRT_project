@@ -1,12 +1,10 @@
 import pigpio
 import numpy as np
-from PyQt5 import QtWidgets 
 import pyqtgraph as pg
-from pyqtgraph.Qt import QtGui, QtCore
+from pyqtgraph.Qt import QtGui, QtCore,QtWidgets 
 
 # Inicializar pigpio
 pi = pigpio.pi()
-
 # Configuración de la señal
 frequency = 1000  # Frecuencia de la señal en Hz
 sampling_rate = 10000  # Tasa de muestreo en Hz
