@@ -93,6 +93,7 @@ def measure(arg=None):
             time.sleep(1)
         except KeyboardInterrupt:
             break
+    print('Termina el hilo measure')
 
 
 def btn_event(arg=None):
@@ -116,8 +117,11 @@ def btn_event(arg=None):
                 pass
         except KeyboardInterrupt:
             break
+    
+    print('Termina el hilo btn_event')
 
 def main():
+    global STOP_THREADS
     #  Lock memory */
     #/*if(mlockall(MCL_CURRENT|MCL_FUTURE) == -1) {
     #        printf("mlockall failed: %m\n");
@@ -185,21 +189,25 @@ def main():
         GPIO.cleanup()
         return ret_btn, ret_dht
 
-    #/* Join the thread and wait until it is done */
-    ret_btn = lc.pthread_join(thread_btn, None)
-    ret_dht = lc.pthread_join(thread_dht, None)
-    if (ret_btn != 0 or ret_dht != 0):
-        print("join pthread failed: %m\n")
+    try:
+        while True:
+            time.sleep(1)
+    except KeyboardInterrupt:
+        STOP_THREADS = True
+        #/* Join the thread and wait until it is done */
+        ret_btn = lc.pthread_join(thread_btn, None)
+        ret_dht = lc.pthread_join(thread_dht, None)
+        if (ret_btn != 0 or ret_dht != 0):
+            print("join pthread failed: %m\n")
+        else:
+            GPIO.cleanup()
+            sys.exit("\nPrograma finalizado")
 
     return ret_btn, ret_dht
 
 
 if __name__ == "__main__":
-    try:
-        setup()
-        print(main())
-    except KeyboardInterrupt:
-        STOP_THREADS = True
-        GPIO.cleanup()
-        sys.exit("\nPrograma finalizado")
+    setup()
+    print(main())
+    
 
