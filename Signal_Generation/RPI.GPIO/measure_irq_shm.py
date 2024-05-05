@@ -24,7 +24,7 @@ def setup():
     Setup function that initializes GPIO pins and assigns them their corresponding
     functions. It also sets up the button to enable interruptions and initializes 
     the shared memory.
-    :returns: None
+    :returns: Nothing.
     """
     # Usar nombres fisicos
     GPIO.setmode(GPIO.BOARD)
@@ -47,6 +47,12 @@ def setup():
                                        size=MEMORY_SIZE)
 
 def btn_pressed(arg=None):
+    """
+    This function is the interruption handler that is called when the
+    button is pressed.
+    :param arg: Hidden argument. Defaults to None.
+    :returns: Nothing.
+    """
     global RED
 
     if RED:
@@ -59,6 +65,12 @@ def btn_pressed(arg=None):
         GPIO.output(LED_PIN1, GPIO.HIGH) # red high
 
 def main():
+    """
+    Main function of module. Calls setup() function and connects to existing
+    shared memory. It conatins the main loop that reads the sensor and writes
+    to the shared memory until it is ended by KeyboardInterruption().
+    :returns: Notheing.
+    """
     # Global params
     global RED, STOP_THREADS
     # Local params
@@ -91,10 +103,7 @@ def main():
                     [data_to_write.insert(i + j, numb_to_write[j]) for j in range(len(numb_to_write))]
             for i in range(len(data_to_write)):
                 shm.buf[buf_pos + i] = data_to_write[i]
-            #data_to_write = bytearray(data_to_write)
-            #shm.buf[:MEMORY_SIZE] = data_to_write # endpoint derecho del slice OBLIGTAORIO
-            #read_bytes = bytes(shm.buf)
-            #print(read_bytes[:30])
+            # ---------------------
             if RED:
                 print("Lectura de temperatura: ", dht_termo.temperature)
             else:
