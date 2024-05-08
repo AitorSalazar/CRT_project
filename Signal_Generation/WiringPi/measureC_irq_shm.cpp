@@ -29,7 +29,7 @@
 int BTN_STATE = 0;  // 0 -> red, 1 -> blue
 
 int CHECK_SHM;
-void *MEM_PTR;
+void *mem_ptr;
 
 using namespace std;
 
@@ -56,7 +56,7 @@ void signal_callback_handler(int signum) {
     pinMode(HYT_PIN, PM_OFF);
 
     // Desmapear y deslinkar memoria
-    munmap(MEM_PTR, MEMORY_SIZE);
+    munmap(mem_ptr, MEMORY_SIZE);
     close(CHECK_SHM);
     shm_unlink(MEMORY_NAME);
     //cout << "\nPrograma finalizado\n" << endl;
@@ -87,8 +87,8 @@ void setup(void) {
     ftruncate(CHECK_SHM, MEMORY_SIZE);
 
     // Mapear memoria al espacio de direcciones de este proceso
-    MEM_PTR = mmap(NULL, MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, CHECK_SHM, 0);
-    if (MEM_PTR == MAP_FAILED) {
+    mem_ptr = mmap(NULL, MEMORY_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, CHECK_SHM, 0);
+    if (mem_ptr == MAP_FAILED) {
         perror("mmap");
         exit(1);
     }
@@ -98,12 +98,14 @@ void setup(void) {
 
 int main(void) {
     // Parametros locales
-    int buf_pos = 0;
     int read_dht;
     DHT dht_termo;
-    int tempt_e = 0, tempt_d = 0, humdt = 0;
+    int tempt_e = 0;
+    int tempt_d = 0;
+    int humdt = 0;
     int val_array[] = {0, 0, 0};
-    int *mem_intArray = (int*) MEM_PTR;
+    //int *mem_intArray;
+    
 
     // Setup
     setup();
@@ -113,7 +115,7 @@ int main(void) {
     digitalWrite(LED0_PIN, LOW);
     
     // Bucle principal
-
+    //mem_intArray = (int *)mem_ptr;
     while (1) {
         signal(SIGINT, signal_callback_handler);
         // 15 intentos de lectura (internos) 
@@ -123,12 +125,11 @@ int main(void) {
         }
 
         // Escribir datos en memoria compartida
-        humdt = (int) dht_termo.humidity;
-        tempt_e = (int) dht_termo.temperature;
-        tempt_d = (int) (10 * (dht_termo.temperature - tempt_e));
-        for (int i = 0; i < 3; i++) {
-            mem_intArray[i] = humdt;
-        }
+        val_array[0] = (int) dht_termo.humidity;
+        val_array[1] = (int) dht_termo.temperature;
+        val_array[2] = (int) (100 * (dht_termo.temperature) - val_array[1]*100);
+        //printf("iteracion %d dir mem_intArray: %x val_array: %i\n" val_array[i] );
+        memcpy(mem_ptr, val_array,sizeof(int)*3);
 
         if (BTN_STATE == 0) {
 	    //cout << "Lectura de temperatura : %.1f C" << dht_termo.temperature << endl;
