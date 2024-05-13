@@ -11,9 +11,10 @@ Una copia de este repo contiene todos los scripts y ejemplos necesarios para lee
 ### Prerequisitos
 
 Para poder ejecutar los scripts y ejemplos de este proyecto se requiere que los siguientes paquetes hayan sido instalados previamente.
+
 - [WiringPi](https://github.com/WiringPi/WiringPi)
 
-<details><summary><b>Show instructions</b></summary>
+<details><summary><b>Mostrar instrucciones</b></summary>
 
 1. Actualizar paquete apt:
 
@@ -38,7 +39,7 @@ cd WiringPi
 
 - [RPi.GPIO](http://sourceforge.net/projects/raspberry-gpio-python/)
 
-<details><summary><b>Show instructions</b></summary>
+<details><summary><b>Mostrar instrucciones</b></summary>
 
 1. Actualizar pip:
 
@@ -55,41 +56,34 @@ pip install RPi.GPIO
 </details>
 
 
-### Installing
+### Instalación
 
-A step by step series of examples that tell you how to get a development
-environment running
+Lo único que hay que hacer para instalar este proyecto es clonar el repositorio en local.
 
-Say what the step will be
+    git clone https://github.com/AitorSalazar/CRT_project.git
 
-    Give the example
+## Ejecución de los ejemplos de medición
 
-And repeat
+Los scripts para leer los datos del sensor se encuentran en la carpeta `Signal_Generation`. Se han desarrollado y testeado varias variantes del código. Los dos ejemplos principales y completamente funciones se encuentran en las subcarpetas `RPI.GPIO` y `WiringPi`. Ambas se usan para acceder a los GPIOs y la primera contiene el código escrito en Python mientras que la segunda lo tiene escrito en C++. La elección de lenguajes orientados a objetos es debido a que la librería para comunicarse con el sensor utiliza obejtos.
 
-    until finished
+Para ejecutar el ejemplo escrito en Python,
 
-End with an example of getting some data out of the system or using it
-for a little demo
+    cd Signal_Generation/RPI.GPIO/
+    python measure_irq_shm.py
 
-## Running the tests
+Para ejecutar el ejemplo escrito en C++,
 
-Explain how to run the automated tests for this system
+    cd Signal_Generation/WiringPi/
+    ls
 
-### Sample Tests
+Si el ejecutable no se encuentra en el directorio:
 
-Explain what these tests test and why
+    g++ -I. measureC_irq_shm.cpp DHT.cpp -o MeasureExecutable -lwiringPi
 
-    Give an example
+Ejecutar el ejemplo,
 
-### Style test
+    ./MeasureExecutable
 
-Checks if the best practices and the right coding style has been used.
-
-    Give an example
-
-## Deployment
-
-Add additional notes to deploy this on a live system
 
 ## Built With
 
@@ -111,16 +105,13 @@ repository](https://github.com/PurpleBooth/a-good-readme-template/tags).
 
 ## Authors
 
-  - **Billie Thompson** - *Provided README Template* -
-    [PurpleBooth](https://github.com/PurpleBooth)
+  - **Christopher Carmona** [ChrisCarmona11](https://github.com/ChrisCarmona11)
+  - **Aitor Salazar** [AitorSalazar](https://github.com/AitorSalazar)
 
-See also the list of
-[contributors](https://github.com/PurpleBooth/a-good-readme-template/contributors)
-who participated in this project.
 
 ## License
 
-This project is licensed under the [CC0 1.0 Universal](LICENSE.md)
+This project is licensed under the [GNU Genereal Public License v3.0](LICENSE.md)
 Creative Commons License - see the [LICENSE.md](LICENSE.md) file for
 details
 
