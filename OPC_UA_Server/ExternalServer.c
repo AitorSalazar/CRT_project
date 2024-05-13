@@ -1,18 +1,8 @@
 /*
- * ExternalServer.c
- *
- *  Created on: May 9, 2024
- *      Author: ingeteam_chris
- */
-
-
-
-
-/*
  * OpcUaServer.c
  *
  *  Created on: 9 may 2024
- *      Author: Christopher.Carmona
+ *      Author: Christopher.Carmona and Aitor Salazar
  */
 
 #include "open62541.h"
@@ -183,7 +173,7 @@ UA_StatusCode buildDataModel(UA_Server *pServer, st_SensorData *pSensorData)
 {
 	UA_StatusCode retval = UA_STATUSCODE_GOOD;
 
-	retval = OPCUA_addValueMonitoredItem(	pServer,
+	retval = addValueMonitoredItem(	pServer,
 											HUMIDITY_NODE_NAME,
 											UA_TYPES[UA_TYPES_INT32].typeId,
 											UA_ACCESSLEVELMASK_READ,
@@ -198,7 +188,7 @@ UA_StatusCode buildDataModel(UA_Server *pServer, st_SensorData *pSensorData)
 	{
 		return retval;
 	}
-	retval = OPCUA_addValueMonitoredItem(	pServer,
+	retval = addValueMonitoredItem(	pServer,
 											TEMP_NODE_NAME,
 											UA_TYPES[UA_TYPES_FLOAT].typeId,
 											UA_ACCESSLEVELMASK_READ,
@@ -218,115 +208,104 @@ UA_StatusCode buildDataModel(UA_Server *pServer, st_SensorData *pSensorData)
 
 	return retval;
 
-
-
-}
-UA_StatusCode grabSharedMemory(int *pshm_fd, void *ptr)
-{
-	UA_StatusCode 	retval = UA_STATUSCODE_GOOD;
-	int 			shm_fd;
-
-	//Abrir la memoria
-	shm_fd = shm_open(MEMORY_NAME,O_RDONLY, 0666);
-	if(shm_fd == -1 )
-	{
-		perror("shm_open");
-		exit(EXIT_FAILURE);
-	}
-
-	//Mapear la memoria
-	ptr = mmap(NULL, MEMORY_SIZE, PROT_READ, MAP_SHARED,shm_fd,0);
-	if(shm_fd == -1 )
-	{
-		perror("mmap");
-		exit(EXIT_FAILURE);
-	}
-
-	*pshm_fd = shm_fd;
-	return retval;
 }
 
-UA_StatusCode freeSharedMemory(int *pshm_fd, void *ptr)
-{
-	UA_StatusCode 	retval = UA_STATUSCODE_GOOD;
-	int 			shm_fd;
-	shm_fd = *pshm_fd;
-	//Desmapear la memoria
-	if(munmap(ptr, MEMORY_SIZE)==-1 )
-	{
-		perror("munmap");
-		exit(EXIT_FAILURE);
-	}
 
-	//Cerrar la memoria
-	if(close(shm_fd) == -1 )
-	{
-		perror("close");
-		exit(EXIT_FAILURE);
-	}
-
-	return retval;
-}
-
-int UpdateData(void *dataForUpdateThread)
+void * UpdateData(void *dataForUpdateThread)
 {
 	st_dataForUpdateThread *pDataForUpdateThread = (st_dataForUpdateThread *)dataForUpdateThread;
 	int 	temp_int;
 	int 	temp_frac;
 	float 	aux_temperature;
 	int 	*pMemory=(int *)pDataForUpdateThread->ptr;
-	 do {
+	do {
 		pDataForUpdateThread->pSensordata->humidity = *pMemory;
-		temp_int = *(pMemory+1);
-		temp_frac = *(pMemory+2);
+		temp_int =pMemory[1];
+		temp_frac = pMemory[2];
 		aux_temperature = temp_int + (float)temp_frac/100.0f;
 		pDataForUpdateThread->pSensordata->temp = aux_temperature;
-		printf("current values are hum: %i temp: %f\n");
-		usleep(100);
+		//printf("current values are hum: %i temp: %f\n",pDataForUpdateThread->pSensordata->humidity,pDataForUpdateThread->pSensordata->temp);
+		usleep(100000);
 
 	 }while(true);
 
 
 }
 
+int configurateServer (UA_Server *pServer) 
+{
+	UA_StatusCode 		retval;
+	UA_String 			urlAddress[1];
+	UA_ServerConfig 	*pConfig = UA_Server_getConfig(pServer);
+    char 				ipAddress[]= "opc.tcp://localhost:4840";
+
+	urlAddress[0]= UA_STRING(ipAddress);
+	retval = UA_Array_copy(urlAddress,1, (void *) &pConfig->serverUrls,&UA_TYPES[UA_TYPES_STRING]);
+	pConfig->serverUrlsSize = 1;
+	return (int)retval;
+}
+
+
+void allocateSharedMem(int *pshm_fd,void*ptr)
+{
+	*pshm_fd = shm_open(MEMORY_NAME, O_RDONLY, 0666);
+    if (*pshm_fd == -1) {
+        perror("shm_open");
+        exit(EXIT_FAILURE);
+    }
+
+    // Map the shared memory object into process address space
+    ptr = mmap(NULL, MEMORY_SIZE, PROT_READ, MAP_SHARED, *pshm_fd, 0);
+    if (ptr == MAP_FAILED) {
+        perror("mmap");
+        exit(EXIT_FAILURE);
+    }
+}
+
+void freeSharedMem(int *pshm_fd,void*ptr)
+{
+	 // Unmap the shared memory
+    if (munmap(ptr, MEMORY_SIZE) == -1) {
+        perror("munmap");
+        exit(EXIT_FAILURE);
+    }
+
+    // Close the shared memory object
+    if (close(*pshm_fd) == -1) {
+        perror("close");
+        exit(EXIT_FAILURE);
+    }
+}
+
 int main(void) {
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
+	int 					shm_fd;
+	void					*ptr;
+    UA_StatusCode 			retval;
+    st_SensorData 			sensorData = {.temp = 0.0,.humidity = 0};
+    st_dataForUpdateThread 	dataForUpdateThread;
+	pthread_t 				id;
+    UA_Server 				*pServer;
 
-    UA_StatusCode retval;
-    st_SensorData sensorData = {.temp = 0.0,.humidity = 0};
-    st_dataForUpdateThread dataForUpdateThread;
-
-    int shm_fd;
-    void * ptr;
-
-
-    UA_Server *pServer = UA_Server_new();
-    UA_ServerConfig *pConfig = UA_Server_getConfig(pServer);
-    UA_ServerConfig_setDefault(pConfig);
-
-
-    char ipAddress[]= "opc.tcp://localhost:4840";
-	UA_String urlAddress[1];
-	urlAddress[0]= UA_STRING(ipAddress);
-	pConfig->serverUrls = urlAddress;
-	pConfig->serverUrlsSize = 1;
-
-	//
-
+	pServer = UA_Server_new();
+	configurateServer(pServer);
+	//Data model for this task
 	retval = buildDataModel(pServer,&sensorData);
 
-	retval = grabSharedMemory(&shm_fd,ptr );
+	allocateSharedMem(&shm_fd,ptr);
 
-	//Lanzar Hilo que hara polling de la shared memory
+	//Run thread to make polling to shared memory
 	dataForUpdateThread.pSensordata = &sensorData;
 	dataForUpdateThread.ptr = ptr;
-	pthread_t id;
-	pthread_create(&id, NULL, UpdateData, (void *)&dataForUpdateThread); // Me queda hacer la funcion de updare
-
-//    retval = UA_Server_run(pServer, &running);
+	pthread_create(&id, NULL, &UpdateData, (void *)&dataForUpdateThread); 
+	
+	// Run the server
 	retval = UA_Server_runUntilInterrupt(pServer);
-	retval = freeSharedMemory(&shm_fd,ptr );
+
+	freeSharedMem(&shm_fd,ptr);
+
+	//Clean the server from memory
     UA_Server_delete(pServer);
     return retval == UA_STATUSCODE_GOOD ? EXIT_SUCCESS : EXIT_FAILURE;
 }
