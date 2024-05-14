@@ -85,24 +85,6 @@ Ejecutar el ejemplo,
     ./MeasureExecutable
 
 
-## Built With
-
-  - [Contributor Covenant](https://www.contributor-covenant.org/) - Used
-    for the Code of Conduct
-  - [Creative Commons](https://creativecommons.org/) - Used to choose
-    the license
-
-## Contributing
-
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code
-of conduct, and the process for submitting pull requests to us.
-
-## Versioning
-
-We use [Semantic Versioning](http://semver.org/) for versioning. For the versions
-available, see the [tags on this
-repository](https://github.com/PurpleBooth/a-good-readme-template/tags).
-
 ## Authors
 
   - **Christopher Carmona** [ChrisCarmona11](https://github.com/ChrisCarmona11)
@@ -111,12 +93,5 @@ repository](https://github.com/PurpleBooth/a-good-readme-template/tags).
 
 ## License
 
-This project is licensed under the [GNU Genereal Public License v3.0](LICENSE.md)
-Creative Commons License - see the [LICENSE.md](LICENSE.md) file for
-details
-
-## Acknowledgments
-
-  - Hat tip to anyone whose code is used
-  - Inspiration
-  - etc
+Este proyecto está licenciado bajo licencia [GNU Genereal Public License v3.0](LICENSE.md)
+Licencia Creative Commons - ver [LICENSE.md](LICENSE.md) para más detalles.
