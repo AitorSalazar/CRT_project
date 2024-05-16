@@ -1,0 +1,11 @@
+[Unit]
+Description= OPC-UA Server
+After=multi-user.target
+
+[Service]
+Type=simple
+ExecStart=/home/chris/Github/CRT_project/OPC_UA_Server
+Restat=no
+
+[Install]
+WantedBy=multi-user.target

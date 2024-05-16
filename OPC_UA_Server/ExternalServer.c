@@ -224,7 +224,7 @@ void * UpdateData(void *dataForUpdateThread)
 		temp_frac = pMemory[2];
 		aux_temperature = temp_int + (float)temp_frac/100.0f;
 		pDataForUpdateThread->pSensordata->temp = aux_temperature;
-		//printf("current values are hum: %i temp: %f\n",pDataForUpdateThread->pSensordata->humidity,pDataForUpdateThread->pSensordata->temp);
+		printf("current values are hum: %i temp: %f\n",pDataForUpdateThread->pSensordata->humidity,pDataForUpdateThread->pSensordata->temp);
 		usleep(100000);
 
 	 }while(true);
@@ -237,7 +237,7 @@ int configurateServer (UA_Server *pServer)
 	UA_StatusCode 		retval;
 	UA_String 			urlAddress[1];
 	UA_ServerConfig 	*pConfig = UA_Server_getConfig(pServer);
-    char 				ipAddress[]= "opc.tcp://localhost:4840";
+    char 				ipAddress[]= "opc.tcp://Raspi4Chris.local:4840";
 
 	urlAddress[0]= UA_STRING(ipAddress);
 	retval = UA_Array_copy(urlAddress,1, (void *) &pConfig->serverUrls,&UA_TYPES[UA_TYPES_STRING]);
@@ -246,8 +246,8 @@ int configurateServer (UA_Server *pServer)
 }
 
 
-void allocateSharedMem(int *pshm_fd,void*ptr)
-{
+void allocateSharedMem(int *pshm_fd,void **ptr)
+{	
 	*pshm_fd = shm_open(MEMORY_NAME, O_RDONLY, 0666);
     if (*pshm_fd == -1) {
         perror("shm_open");
@@ -255,17 +255,17 @@ void allocateSharedMem(int *pshm_fd,void*ptr)
     }
 
     // Map the shared memory object into process address space
-    ptr = mmap(NULL, MEMORY_SIZE, PROT_READ, MAP_SHARED, *pshm_fd, 0);
+    *ptr = mmap(NULL, MEMORY_SIZE, PROT_READ, MAP_SHARED, *pshm_fd, 0);
     if (ptr == MAP_FAILED) {
         perror("mmap");
         exit(EXIT_FAILURE);
     }
 }
 
-void freeSharedMem(int *pshm_fd,void*ptr)
+void freeSharedMem(int *pshm_fd,void**ptr)
 {
 	 // Unmap the shared memory
-    if (munmap(ptr, MEMORY_SIZE) == -1) {
+    if (munmap(*ptr, MEMORY_SIZE) == -1) {
         perror("munmap");
         exit(EXIT_FAILURE);
     }
@@ -280,6 +280,7 @@ void freeSharedMem(int *pshm_fd,void*ptr)
 int main(void) {
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
+
 	int 					shm_fd;
 	void					*ptr;
     UA_StatusCode 			retval;
@@ -292,8 +293,7 @@ int main(void) {
 	configurateServer(pServer);
 	//Data model for this task
 	retval = buildDataModel(pServer,&sensorData);
-
-	allocateSharedMem(&shm_fd,ptr);
+	allocateSharedMem(&shm_fd,&ptr);
 
 	//Run thread to make polling to shared memory
 	dataForUpdateThread.pSensordata = &sensorData;
