@@ -1,0 +1,12 @@
+[Unit]
+Description=Servicio de lectura parametros de entorno
+After=network.target
+
+[Service]
+ExecStart=/home/chris/Github/CRT_project/Signal_Generation/WiringPi/measureC_irq_shm
+WorkingDirectory=/home/chris/Github/CRT_project/Signal_Generation/WiringPi
+User=chris
+Restart=always
+
+[Install]
+WantedBy=multi-user.target

@@ -248,11 +248,22 @@ int configurateServer (UA_Server *pServer)
 
 void allocateSharedMem(int *pshm_fd,void **ptr)
 {	
+	int TryCounter = 0;
+	*pshm_fd=-1;
+	while (*pshm_fd<0){
+
 	*pshm_fd = shm_open(MEMORY_NAME, O_RDONLY, 0666);
     if (*pshm_fd == -1) {
-        perror("shm_open");
-        exit(EXIT_FAILURE);
+		if (TryCounter == 10){
+
+			perror("shm_open");
+			exit(EXIT_FAILURE);
+		}
+		TryCounter++;
+		printf("%i. Trying to connect to shared memory\n",TryCounter);
+		sleep(1);
     }
+	}
 
     // Map the shared memory object into process address space
     *ptr = mmap(NULL, MEMORY_SIZE, PROT_READ, MAP_SHARED, *pshm_fd, 0);
