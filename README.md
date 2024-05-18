@@ -2,7 +2,7 @@
 
 Proyecto de asignatura CRT. Las funcionalidades del código de este proyecto se dividen en dos partes. La primera parte contiene el código que se usa para leer los datos del circuito electrónico. Se configuran las GPIOs de la Raspberry y se leen del pulsador y el sensor de temperatura y humedad. Las pulsaciones del botón se leen mediante interrupciones y si se registra una pulsación se cambia el estado de los LEDs y se cambia la información mostrada en pantalla. También se inicializa un bloque de memoria compartida en la que se escriben las mediciones del sensor.
 
-La segunda parte contiene el código para ejecutar el servidor OPC-UA que lee los datos escritos en la memoria compartida y el cliente que se conecta al servidor y leer esa información. Tanto servidor como cliente deben estar conectados a la misma red y el cliente puede acceder a los datos en forma de objetos de dato del servidor. Para facilitar el acceso al servidor y a los datos del cliente, el código del cliente se ejecuta con una GUI interactiva y fácil de usar.
+La segunda parte contiene el código para ejecutar el servidor OPC-UA que lee los datos escritos en la memoria compartida y el cliente que se conecta al servidor y leer esa información. Tanto servidor como cliente deben estar conectados a la misma red y el cliente puede acceder a los datos en forma de objetos de dato del servidor. Para facilitar el acceso al servidor y a los datos del cliente, el código del cliente se ejecuta con una GUI interactiva y fácil de usar. Ademas de este primer cliente que se comparte en el repositorio (https://github.com/FreeOpcUa/opcua-client-gui) se dispone de un segundo cliente el cual corriendo en paralelo con un script de python es capaz de mostrar unas graficas donde se muestra la fluctuacion de los datos telemetricos publicados.
 
 ## Primeros pasos
 
@@ -55,6 +55,37 @@ pip install RPi.GPIO
 
 </details>
 
+- [Open62541]](https://github.com/open62541/open62541)
+
+<details><summary><b>Mostrar instrucciones</b></summary>
+
+1. Instalar con CMake:
+
+ ```sh
+ sudo apt install cmake
+ ````
+
+2. Generar carpeta de build:
+
+```sh
+cd open62541 | mkdir build
+```
+
+
+3. Cambiar el CMakeLists.txt y habilitar UA_ENABLE_AMALGAMATION :
+
+ ```sh
+ option(UA_ENABLE_AMALGAMATION "Concatenate the library to a single file open62541.h/.c" OFF) ->
+ option(UA_ENABLE_AMALGAMATION "Concatenate the library to a single file open62541.h/.c" ON)
+ ````
+
+2. Dentro de la carpeta build:
+
+```sh
+cmake .. | make
+```
+Aun asi, los archivos fuente que se usan el repositorio para generar aplicaciones OPC-UA  estan junto a los fuentes con los nombres open62541.c/.h .
+</details>
 
 ### Instalación
 
@@ -64,7 +95,7 @@ Lo único que hay que hacer para instalar este proyecto es clonar el repositorio
 
 ## Ejecución de los ejemplos de medición
 
-Los scripts para leer los datos del sensor se encuentran en la carpeta `Signal_Generation`. Se han desarrollado y testeado varias variantes del código. Los dos ejemplos principales y completamente funciones se encuentran en las subcarpetas `RPI.GPIO` y `WiringPi`. Ambas se usan para acceder a los GPIOs y la primera contiene el código escrito en Python mientras que la segunda lo tiene escrito en C++. La elección de lenguajes orientados a objetos es debido a que la librería para comunicarse con el sensor utiliza obejtos.
+Los scripts para leer los datos del sensor se encuentran en la carpeta `Signal_Generation`. Se han desarrollado y testeado varias variantes del código. Los dos ejemplos principales y completamente funciones se encuentran en las subcarpetas `RPI.GPIO` y `WiringPi`. Ambas se usan para acceder a los GPIOs y la primera contiene el código escrito en Python mientras que la segunda lo tiene escrito en C++. La elección de lenguajes orientados a objetos es debido a que la librería para comunicarse con el sensor utiliza objetos.
 
 Para ejecutar el ejemplo escrito en Python,
 
