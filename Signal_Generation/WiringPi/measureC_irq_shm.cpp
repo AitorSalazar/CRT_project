@@ -19,12 +19,6 @@
 #define MEMORY_NAME "/shm_temp_humidity"
 #define MEMORY_SIZE 2048
 
-// Variables externas
-//extern int BTN_STATE;
-
-// Funciones externas
-//extern void btn_handler(void);
-
 // Variables globales
 int BTN_STATE = 0;  // 0 -> red, 1 -> blue
 
@@ -33,6 +27,14 @@ void *mem_ptr;
 
 using namespace std;
 
+/**
+ * @brief Button interruption handler
+ * 
+ * This function is called whenever the button is pressed. It reads the global
+ * variable BTN_STATE and depending on its state it switches red and blue LEDs
+ * on and off. It then changes the value of BTN_STATE to its opposite.
+ * This function takes no arguments and returns void.
+ */
 void btn_handler(void) {
 
     if (BTN_STATE == 0) {
@@ -45,7 +47,15 @@ void btn_handler(void) {
     BTN_STATE = !BTN_STATE;
 }
 
-
+/**
+ * @brief ^C interruption handler
+ * 
+ * This function is called to terminate execution whenever a keyboard interrupt is
+ * called.
+ * 
+ * @param signum Signal integer state
+ * @return void
+ */
 void signal_callback_handler(int signum) {
     // Deslinkar y apagar pines
     pinMode(BTN_PIN, PM_OFF);
@@ -65,7 +75,14 @@ void signal_callback_handler(int signum) {
     exit(signum);
 }
 
-
+/**
+ * @brief Initial set up function
+ * 
+ * This function is used to make the initial set up of the GPIOs and the 
+ * creation of the shared memory object. If the shared memory is not opened 
+ * correctly it exits the program with error code 1.
+ * This function takes no arguments and returns void.
+ */
 void setup(void) {
     // Iniciar con numeracion fisica
     wiringPiSetupPhys();
@@ -95,7 +112,17 @@ void setup(void) {
     printf("Memoria abierta sin problemas\n");
 }
 
-
+/**
+ * @brief Main function
+ * 
+ * This is the main function of this source. It initializes the GPIOs and 
+ * the shared memory by calling setup(). It reads the data from the sensor 
+ * and writes it into the already initialized shared memory. Dependinf on 
+ * the value of the global variable BTN_STATE it prints out temperature or 
+ * humidity information.
+ * 
+ * @return int 
+ */
 int main(void) {
     // Parametros locales
     int read_dht;
