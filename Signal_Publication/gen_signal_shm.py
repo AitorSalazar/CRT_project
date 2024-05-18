@@ -2,7 +2,6 @@ import sys
 import numpy as np
 import pyqtgraph as pg
 import struct
-import array
 from PyQt5.QtCore import QTimer
 from PyQt5.QtWidgets import QApplication
 from multiprocessing import shared_memory
@@ -11,12 +10,10 @@ import signal
 MEMORY_NAME = "shm_temp_humidity"
 MEMORY_SIZE = 2048
 
-STOP_THREADS = False
+# Define initial arrays of data 
+T_ARRAY = np.linspace(0, 1, 6)  # 1s, Ts = 200ms (6 samples per second)
+X_ARRAY = np.zeros(6)
 
-# Define arrays of data
-T_ARRAY = np.linspace(0, 1, 2)  # 50s, Ts = 50ms (20 samples per second)
-X_ARRAY = np.zeros(2)
-# Sample pointer and data to send
 SAMPLE = 0
 Temperature = 0.0
 Humidity = 0 
@@ -56,8 +53,7 @@ def setup_shared_memory():
     return shm_a
 
 def cleanup():
-    global STOP_THREADS, qtimer, shm
-    STOP_THREADS = True
+    global  qtimer, shm
     qtimer.stop()
     print("Timer stopped")
     shm.unlink()

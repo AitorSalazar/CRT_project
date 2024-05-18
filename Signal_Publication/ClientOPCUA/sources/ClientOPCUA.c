@@ -71,59 +71,64 @@ int main(void)
 {
     signal(SIGINT, stopHandler);
     signal(SIGTERM, stopHandler);
-    int  TryCounter=0;
-    bool connected = false;
-    int 					shm_fd;
-	void					*ptr;
+
+    int             TryCounter=0;
+    bool            connected = false;
+    int 		    shm_fd;
+	void		    *ptr;
+    UA_StatusCode   retval;
+    UA_Variant      valueTemp; 
+    UA_Variant      valueHum; 
+    UA_Float        raw_Temp;
+    UA_Int32        raw_Hum;
+    UA_NodeId       nodeIdHum;
+    UA_NodeId       nodeIdTemp;
     
     UA_Client *client = UA_Client_new();
     UA_ClientConfig_setDefault(UA_Client_getConfig(client));
-    UA_StatusCode retval;
+    
     allocateSharedMem(&shm_fd,&ptr);
+    
     while(!connected)
     {
-   	retval = UA_Client_connect(client, "opc.tcp://Raspi4Chris.local:4840");
+   	    retval = UA_Client_connect(client, "opc.tcp://Raspi4Chris.local:4840");
     	if(retval != UA_STATUSCODE_GOOD)
         {
-        UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
+            UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                 	    "The connection failed with status code %s",
                    			 UA_StatusCode_name(retval));
         
-        printf("%i Try to connect to Server\n",TryCounter);
-        sleep(1);
+            printf("%i Try to connect to Server\n",TryCounter);
+            sleep(1);
         }
         else 
         {
             connected= true;
         }
+
         if (TryCounter == 10 )
         {
             break;
         }
     }
+    
     if(!connected)
     {
-    freeSharedMem(&shm_fd,ptr);
-    UA_Client_delete(client);
-   	return 0;
+        freeSharedMem(&shm_fd,ptr);
+        UA_Client_delete(client);
+   	    return 0;
     }
 
 
     /* Read the value attribute of the node. UA_Client_readValueAttribute is a
      * wrapper for the raw read service available as UA_Client_Service_read. */
-    UA_Variant valueTemp; 
-    UA_Variant valueHum; 
     UA_Variant_init(&valueTemp);
     UA_Variant_init(&valueHum);
 
     /* NodeId of the variable holding the current time */
-    UA_NodeId nodeIdHum;
     nodeIdHum = UA_NODEID_STRING(1,"Humidity");
-    UA_NodeId nodeIdTemp;
     nodeIdTemp = UA_NODEID_STRING(1,"Temperature");
     
-    UA_Float raw_Temp;
-    UA_Int32 raw_Hum;
     int * intptr = (int *)ptr;
     float auxfloat;
     while (running)
@@ -131,8 +136,7 @@ int main(void)
         retval = UA_Client_readValueAttribute(client, nodeIdHum, &valueHum);
         retval = UA_Client_readValueAttribute(client, nodeIdTemp, &valueTemp);
 
-        if(retval == UA_STATUSCODE_GOOD &&
-           UA_Variant_hasScalarType(&valueTemp, &UA_TYPES[UA_TYPES_FLOAT])) {
+        if(retval == UA_STATUSCODE_GOOD && UA_Variant_hasScalarType(&valueTemp, &UA_TYPES[UA_TYPES_FLOAT])) {
             raw_Temp = *(UA_Float *) valueTemp.data;
             intptr[1] = (int)raw_Temp;
             auxfloat = (((float)raw_Temp) * 100.0)-100*((int)raw_Temp);
@@ -140,13 +144,14 @@ int main(void)
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                         "Temperature is: %f",
                         raw_Temp);
-        } else {
+        } 
+        else 
+        {
             UA_LOG_INFO(UA_Log_Stdout, UA_LOGCATEGORY_USERLAND,
                         "Reading the value failed with status code %s",
                         UA_StatusCode_name(retval));
         }
-         if(retval == UA_STATUSCODE_GOOD &&
-           UA_Variant_hasScalarType(&valueHum, &UA_TYPES[UA_TYPES_INT32])) {
+        if(retval == UA_STATUSCODE_GOOD && UA_Variant_hasScalarType(&valueHum, &UA_TYPES[UA_TYPES_INT32])) {
             raw_Hum = *(UA_Int32 *) valueHum.data;
             printf("raw_Hum: %i\n",(int)raw_Hum);
             intptr[0] = (int)raw_Hum;
@@ -165,7 +170,7 @@ int main(void)
     UA_Variant_clear(&valueHum);
     UA_Variant_clear(&valueTemp);
     UA_Client_delete(client); /* Disconnects the client internally */
-    freeSharedMem(&shm_fd,ptr);
+    freeSharedMem(&shm_fd,&ptr);
     return 0;
 }
 
