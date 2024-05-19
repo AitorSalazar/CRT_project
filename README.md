@@ -115,6 +115,47 @@ Ejecutar el ejemplo,
 
     ./MeasureExecutable
 
+## Ejecución del Servidor OPC-UA
+
+El servidor que se ha generado está escrito en lenguaje C y tiene como objetivo establecerse el servidor en la dirección IP Raspi4Chris en el puerto 4840. En el script se añaden dos nodos Data-Node al modelo de datos y ambos nodos disponen de funciones callback que hacen que se actualizen de manera periodica
+
+Es necesario tener alguno de los ejemplos anteriores corriendo para que el servidor se conecte a la memoria compartida generada.
+
+Para ejecutar el ejemplo se dispone de un binario en el propio repositorio en la ruta : 
+
+    cd OPC_UA_Server
+    ./OpcUaServer
+
+En caso de querer recompilar el servido el comando en terminal sería el siguiente:
+
+    gcc -o OpcUaServer -I./open62541 ExternalServer.c
+
+
+
+## Ejecución del Cliente OPC-UA de Python
+
+El cliente que se ha utilizado durante el desarrollo es del repositorio https://github.com/FreeOpcUa/opcua-client-gui. Para lanzarlo es necesario disponer del paquete asyncua de python. Para lanzar el cliente se deberá clonar el repositorio e instalar este paquete. Bastará con lanzar el siguiente comando en un terminal para hacer la instalación:
+
+    pip install asyncua
+
+Una vez instalado se tendrá que lanzar el script app.py del repositorio.
+
+    cd opcua-client-gui
+    python app.py
+
+
+## Ejecución del Cliente OPC-UA para graficar
+
+Los script que deben ser ejecutados para poder visualizar graficamente los valores publicados en el servidor son, por un lado, el script ClientOPCUA de la ruta Signal_Publication/ClientOPCUA/sources y el script gen_signal_shm.py de la ruta Signal_publication/ClientOPCUA en terminales separados. 
+
+Terminal 1:
+    Signal_Publication/ClientOPCUA/sources/ClientOPCUA
+
+Terminal 2:
+    python Signal_Publication/ClientOPCUA/gen_signal_shm.py
+
+Ejecutando estos se mostrará en pantalla una interfaz grafica con dos graficas, una para la humedad y otra para la temperatura.
+
 
 ## Authors
 
